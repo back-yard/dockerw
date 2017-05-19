@@ -1,0 +1,26 @@
+version: '3'
+services:
+  rails:
+    build:
+      context: .
+      dockerfile: ./.rocker_docker/rails/Dockerfile/
+    expose:
+      - '5000'
+    ports:
+      - '5000:5000'
+    links:
+      - 'mysql:databasehost'
+    depends_on:
+      - mysql
+  mysql:
+    build:
+      context: .
+      dockerfile: ./.rocker_docker/mysql/Dockerfile
+    volumes:
+      - './.rocker_docker/mysql/data_dir:/var/lib/mysql:rw'
+    ports:
+      - '3300:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass

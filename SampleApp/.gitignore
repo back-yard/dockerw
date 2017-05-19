@@ -20,3 +20,6 @@
 # Ignore Byebug command history file.
 .byebug_history
 /vendor/ruby
+
+.rocker_docker/mysql/data_dir/*
+!.gitkeep
