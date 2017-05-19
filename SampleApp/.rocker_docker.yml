@@ -4,11 +4,11 @@
 # Default is rocker_docker
 application_name: sample_app
 
-# Set rails version
-# Visit: https://hub.docker.com/_/rails/ for list of available versions
+# Set ruby version
+# Visit: https://hub.docker.com/_/ruby/ for list of available versions
 #
 # Default is latest
-rails_version: latest
+ruby_version: latest
 
 # Set docker container's rails environment to production, staging, or development
 # Make sure application is properly configured to run in 'application_env' (development)
