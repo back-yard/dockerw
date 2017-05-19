@@ -111,7 +111,7 @@ GEM
     rb-fsevent (0.9.8)
     rb-inotify (0.9.8)
       ffi (>= 0.5.0)
-    rocker_docker (0.0.1.pre.6)
+    rocker_docker (0.1.0.beta.2)
       colorize
       docker-api
     sass (3.4.24)
