@@ -4,6 +4,7 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/xenial64"
   config.vm.synced_folder "./scripts", "/home/ubuntu/scripts"
+  config.vm.synced_folder "./SampleApp", "/home/ubuntu/SampleApp"
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false
     vb.memory = 1024
