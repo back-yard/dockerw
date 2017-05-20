@@ -15,6 +15,7 @@ Vagrant.configure("2") do |config|
     apt-get update
     apt-get -y dist-upgrade
     apt-get -y autoremove
+    apt-get install -y mysql-client
     apt-get clean
   SHELL
 end
