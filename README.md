@@ -1,4 +1,4 @@
-[![asciicast](https://asciinema.org/a/121532.png)](https://asciinema.org/a/121532)
+[![asciicast](https://asciinema.org/a/121541.png)](https://asciinema.org/a/121541)
 
 # Install Docker
 
@@ -216,6 +216,3 @@ docker-compose stop
 docker-compose down
 ```
 
-### Demo
-
-[![asciicast](https://asciinema.org/a/121534.png)](https://asciinema.org/a/121534)
