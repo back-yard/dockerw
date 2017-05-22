@@ -1,4 +1,4 @@
-[![asciicast](https://asciinema.org/a/121541.png)](https://asciinema.org/a/121541)
+[![asciicast](https://asciinema.org/a/121741.png)](https://asciinema.org/a/121741)
 
 # Install Docker
 
