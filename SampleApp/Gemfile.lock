@@ -44,14 +44,14 @@ GEM
     byebug (9.0.6)
     colorize (0.8.1)
     concurrent-ruby (1.0.5)
-    docker-api (1.33.4)
+    docker-api (1.33.6)
       excon (>= 0.38.0)
       json
-    dockerize_rails (1.0.1.beta.2)
+    dockerize_rails (1.0.3.beta.6)
       colorize
       docker-api
     erubis (2.7.0)
-    excon (0.55.0)
+    excon (0.57.1)
     execjs (2.7.0)
     ffi (1.9.18)
     globalid (0.4.0)
@@ -154,7 +154,7 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
-  dockerize_rails
+  dockerize_rails (~> 1.0.3.beta.6)
   jbuilder (~> 2.5)
   jquery-rails
   listen (~> 3.0.5)
