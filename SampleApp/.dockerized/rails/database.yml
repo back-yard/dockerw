@@ -1,0 +1,37 @@
+---
+development:
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  timeout: 5000
+  username: user
+  password: pass
+  database: sampleapp_development
+  host: databasehost
+test:
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  timeout: 5000
+  username: user
+  password: pass
+  database: sampleapp_test
+  host: databasehost
+staging:
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  timeout: 5000
+  username: user
+  password: pass
+  database: sampleapp_staging
+  host: databasehost
+production:
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  timeout: 5000
+  username: user
+  password: pass
+  database: sampleapp_production
+  host: databasehost

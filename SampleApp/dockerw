@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+RAILS_APP_NAME="sampleapp_rails"
+MYSQL_APP_NAME="sampleapp_mysql"
+POSTGRESQL_APP_NAME="sampleapp_postgresql"
+SERVICE_NAME_POSTFIX="_service"
+build() {
+  if docker images | grep "${RAILS_APP_NAME}" > /dev/null; then
+    echo "[0;34;49m  ==> Image ${RAILS_APP_NAME} already exists[0m"
+  else
+    echo "[0;34;49m  ==> Building ${RAILS_APP_NAME}[0m"
+    docker build \
+      -t ${RAILS_APP_NAME} \
+      -f ./.dockerized/rails/Dockerfile . > /dev/null
+  fi
+  if docker images | grep "${MYSQL_APP_NAME}" > /dev/null; then
+    echo "[0;34;49m  ==> Image ${MYSQL_APP_NAME} already exists[0m"
+  else
+    echo "[0;34;49m  ==> Building ${MYSQL_APP_NAME}[0m"
+    docker build \
+      -t ${MYSQL_APP_NAME} \
+      -f ./.dockerized/mysql/Dockerfile . > /dev/null
+  fi
+}
+rebuild() {
+  destroy
+  build
+}
+destroy(){
+  stop > /dev/null
+  remove > /dev/null
+  if docker images | grep "${RAILS_APP_NAME}" > /dev/null; then
+    echo "[0;33;49m  ==> Destroying ${RAILS_APP_NAME}[0m"
+    docker rmi ${RAILS_APP_NAME} > /dev/null
+  else
+    echo "[0;33;49m  ==> Image ${RAILS_APP_NAME} does not exists[0m"
+  fi
+  if docker images | grep "${MYSQL_APP_NAME}" > /dev/null; then
+    echo "[0;33;49m  ==> Destroying ${MYSQL_APP_NAME}[0m"
+    docker rmi ${MYSQL_APP_NAME} > /dev/null
+  else
+    echo "[0;33;49m  ==> Image ${MYSQL_APP_NAME} does not exists[0m"
+  fi
+}
+remove(){
+  stop > /dev/null
+  if docker ps -a | grep "${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;33;49m  ==> Removing service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+    docker rm ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} > /dev/null
+  else
+    echo "[0;33;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} does not exists[0m"
+  fi
+  if docker ps -a | grep "${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;33;49m  ==> Removing servic ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+    docker rm ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} > /dev/null
+  else
+    echo "[0;33;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} does not exists[0m"
+  fi
+}
+create() {
+  if docker images | grep "${MYSQL_APP_NAME}" > /dev/null; then
+    if docker ps -a | grep "${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+      echo "[0;34;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} already created. Starting instead[0m"
+    else
+      echo "[0;34;49m  ==> Creating service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+      docker run -d --name ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} \
+        --env MYSQL_ROOT_PASSWORD=root \
+        --env MYSQL_USER=user \
+        --env MYSQL_PASSWORD=pass \
+        --publish 3300:3306 \
+        --volume $(pwd)/.dockerized/mysql/data_dir:/var/lib/mysql \
+        ${MYSQL_APP_NAME} > /dev/null
+    fi
+    echo -ne "[0;34;49m  ==> Waiting for database server to start properly ...[0m"
+    for i in {1..20}; do echo -ne '.'; sleep 1; done; echo
+  else
+    echo "[0;31;49m  ==> Image ${MYSQL_APP_NAME} does not exists. Build first[0m"
+    exit 1
+  fi
+  if docker images | grep "${RAILS_APP_NAME}" > /dev/null; then
+    if docker ps -a | grep "${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+      echo "[0;34;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} already created. Starting instead[0m"
+    else
+      echo "[0;34;49m  ==> Creating service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+      docker run -d --name ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} \
+        --link ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}:databasehost \
+        --publish 5000:5000 \
+        --expose 5000 \
+        ${RAILS_APP_NAME} > /dev/null
+    fi
+  else
+    echo "[0;31;49m  ==> Image ${RAILS_APP_NAME} does not exists. Build first[0m"
+  fi
+}
+recreate() {
+  remove > /dev/null
+  create
+}
+status(){
+    if docker ps | grep "${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+      echo "[0;34;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} started[0m"
+    elif docker ps -a | grep "${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+      echo "[0;34;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} not started[0m"
+    else
+      if docker images | grep "${MYSQL_APP_NAME}" > /dev/null; then
+        echo "[0;33;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} does not exists. Consider creating[0m"
+      else
+        echo "[0;33;49m  ==> Image ${MYSQL_APP_NAME} does not exists. Consider building[0m"
+      fi
+    fi
+  if docker ps | grep "${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} started[0m"
+  elif docker ps -a | grep "${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} not started[0m"
+  else
+    if docker images | grep "${RAILS_APP_NAME}" > /dev/null; then
+      echo "[0;33;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} does not exists. Consider creating[0m"
+    else
+      echo "[0;33;49m  ==> Image ${RAILS_APP_NAME} does not exists. Consider building[0m"
+    fi
+  fi
+}
+ps(){
+  cc=`docker ps | grep "bi_tool_mysql_service\|bi_tool_rails_service\|NAMES" | wc -l | tr -d ' \n'`
+  if [[ "$cc" == "3" ]] ; then
+    docker ps | grep "bi_tool_mysql_service\|bi_tool_rails_service\|NAMES"
+  else
+    docker ps -a | grep "bi_tool_mysql_service\|bi_tool_rails_service\|NAMES"
+  fi
+}
+start(){
+  if docker ps | grep "${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} already started[0m"
+  elif docker ps -a | grep "${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Starting service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+    docker start ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} > /dev/null
+    echo -ne "[0;34;49m  ==> Waiting for database server to start properly ...[0m"
+    for i in {1..20}; do echo -ne '.'; sleep 1; done; echo
+  else
+    echo "[0;31;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} does not exists, create first[0m"
+  fi
+  if docker ps | grep "${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} already started[0m"
+  elif docker ps -a | grep "${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Starting service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+    docker start ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} > /dev/null > /dev/null
+  else
+    echo "[0;31;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} does not exists, create first[0m"
+  fi
+}
+stop(){
+  if docker ps | grep "${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Stopping service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+    docker stop ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} > /dev/null
+  else
+    echo "[0;34;49m  ==> Service ${MYSQL_APP_NAME}${SERVICE_NAME_POSTFIX} is not running[0m"
+  fi
+  if docker ps | grep "${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}" > /dev/null; then
+    echo "[0;34;49m  ==> Stopping service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX}[0m"
+    docker stop ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} > /dev/null
+  else
+    echo "[0;34;49m  ==> Service ${RAILS_APP_NAME}${SERVICE_NAME_POSTFIX} is not running[0m"
+  fi
+}
+restart() {
+  stop > /dev/null
+  start
+}
+case $1 in
+  build) build ;;
+  rebuild) rebuild;;
+  start) start;;
+  create) create ;;
+  recreate) recreate ;;
+  restart) restart ;;
+  status) status ;;
+  ps) ps ;;
+  stop) stop ;;
+  remove) remove ;;
+  destroy) destroy ;;
+  *)
+    echo "Usage:" >&2
+    echo "  ./dockerw {build|rebuild|create|recreate|start|restart|status|stop|remove|destroy}" >&2
+    exit 3
+  ;;
+esac
