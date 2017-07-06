@@ -1,0 +1,12 @@
+---
+application_name: sampleapp
+application_env: development
+application_port: 5000
+ruby_version: latest
+database_host_type: linked
+database_host_name: databasehost
+mysql_root_pass: root
+postgres_version: alpine
+mysql_version: latest
+database_user_name: user
+database_user_pass: pass
