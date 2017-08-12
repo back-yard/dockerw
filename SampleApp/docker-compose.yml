@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: ./.dockerized/rails/Dockerfile
+    image: sampleapp_rails:development
     expose:
       - '5000'
     ports:
@@ -16,6 +17,7 @@ services:
     build:
       context: .
       dockerfile: ./.dockerized/mysql/Dockerfile
+    image: sampleapp_mysql:development
     volumes:
       - './.dockerized/mysql/data_dir:/var/lib/mysql:rw'
     ports:
